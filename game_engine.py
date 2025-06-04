@@ -230,45 +230,263 @@ class QuestGame:
         self.current_quest = None
     
     def setup_mini_game(self):
-        """Set up the mini-game based on the friend's ability"""
-        ability_name = type(self.current_friend.special_ability).__name__
+        """Set up mini-game based on friend's specific objectives"""
+        friend_name = self.current_friend.name
+        objective = self.current_quest.get_objective().lower()
         
-        # Different mini-games based on abilities
-        mini_games = {
-            'SuperStrength': 'button_mash',
-            'MechanicalMastery': 'precision',
-            'StatisticalInsight': 'pattern',
-            'ImaginativeCreativity': 'rhythm',
-            'JokestersWit': 'timing',
-            'BiologicalResilience': 'endurance',
-            'MasterOfDisguise': 'stealth',
-            'MinMaxMastery': 'strategy'
-        }
+        # Specific mini-games for each friend's real objectives
+        if friend_name == "Phrits":
+            self.setup_biodiversity_game(objective)
+        elif friend_name == "Mika":
+            self.setup_sports_analysis_game(objective)
+        elif friend_name == "Jordy":
+            self.setup_mystery_disguise_game(objective)
+        elif friend_name == "Casper":
+            self.setup_wordplay_game(objective)
+        elif friend_name == "Roel":
+            self.setup_farming_game(objective)
+        elif friend_name == "Alex":
+            self.setup_innovation_game(objective)
+        elif friend_name == "Rick":
+            self.setup_mechanical_game(objective)
+        elif friend_name == "Suen":
+            self.setup_hacking_game(objective)
+        else:
+            # Fallback
+            self.mini_game_type = 'button_mash'
+            self.mini_game_progress = 0
+            self.mini_game_target = 100
+            self.mini_game_time = 0
+            self.mini_game_duration = 5.0
+    
+    def setup_biodiversity_game(self, objective):
+        """Phrits - Biodiversity exploration and specimen collection"""
+        if "plant" in objective or "specimen" in objective:
+            self.mini_game_type = 'specimen_collection'
+            self.mini_game_instruction = "Collect rare specimens! Press SPACE when you see plants!"
+        elif "forest" in objective or "explore" in objective:
+            self.mini_game_type = 'forest_exploration'
+            self.mini_game_instruction = "Navigate the forest! Use SPACE to move carefully!"
+        elif "microorganism" in objective or "analyze" in objective:
+            self.mini_game_type = 'microscope_analysis'
+            self.mini_game_instruction = "Focus the microscope! Press SPACE at the right moment!"
+        else:
+            self.mini_game_type = 'fitness_challenge'
+            self.mini_game_instruction = "Complete the fitness challenge! Rapid SPACE presses!"
         
-        self.mini_game_type = mini_games.get(ability_name, 'button_mash')
         self.mini_game_progress = 0
         self.mini_game_target = 100
         self.mini_game_time = 0
-        self.mini_game_duration = 5.0
+        self.mini_game_duration = 6.0
+        self.specimens_found = 0
+
+    def setup_sports_analysis_game(self, objective):
+        """Mika - Sports statistics and coaching"""
+        if "statistic" in objective or "analyze" in objective:
+            self.mini_game_type = 'stats_analysis'
+            self.mini_game_instruction = "Analyze the data patterns! Press SPACE when numbers align!"
+        elif "tournament" in objective or "win" in objective:
+            self.mini_game_type = 'tournament_strategy'
+            self.mini_game_instruction = "Make strategic decisions! Time your SPACE presses!"
+        elif "coach" in objective:
+            self.mini_game_type = 'team_coaching'
+            self.mini_game_instruction = "Guide your team! Press SPACE to give instructions!"
+        else:
+            self.mini_game_type = 'trivia_challenge'
+            self.mini_game_instruction = "Answer sports trivia! Quick SPACE presses for correct answers!"
+        
+        self.mini_game_progress = 0
+        self.mini_game_target = 100
+        self.mini_game_time = 0
+        self.mini_game_duration = 7.0
+        self.correct_answers = 0
+
+    def setup_mystery_disguise_game(self, objective):
+        """Jordy - Mystery solving and disguise mastery"""
+        if "disguise" in objective or "art" in objective:
+            self.mini_game_type = 'disguise_mastery'
+            self.mini_game_instruction = "Perfect your disguise! Hold SPACE to blend in!"
+        elif "mystery" in objective or "solve" in objective:
+            self.mini_game_type = 'mystery_solving'
+            self.mini_game_instruction = "Gather clues! Press SPACE to investigate!"
+        elif "relationship" in objective:
+            self.mini_game_type = 'relationship_counseling'
+            self.mini_game_instruction = "Help resolve conflicts! Press SPACE at the right moments!"
+        else:
+            self.mini_game_type = 'car_show_organization'
+            self.mini_game_instruction = "Organize the perfect car show! Precise SPACE timing!"
+        
+        self.mini_game_progress = 0
+        self.mini_game_target = 100
+        self.mini_game_time = 0
+        self.mini_game_duration = 6.5
+        self.stealth_meter = 50
+
+    def setup_wordplay_game(self, objective):
+        """Casper - Jokes, puns, and wordplay"""
+        if "joke" in objective or "funny" in objective:
+            self.mini_game_type = 'joke_telling'
+            self.mini_game_instruction = "Time your punchlines! Press SPACE for perfect comedy timing!"
+        elif "pun" in objective or "wordplay" in objective:
+            self.mini_game_type = 'pun_battle'
+            self.mini_game_instruction = "Create puns! Rapid SPACE presses for wordplay combos!"
+        elif "riddle" in objective or "puzzle" in objective:
+            self.mini_game_type = 'riddle_creation'
+            self.mini_game_instruction = "Craft clever riddles! Press SPACE to build word puzzles!"
+        else:
+            self.mini_game_type = 'confusion_tactics'
+            self.mini_game_instruction = "Confuse with wit! Random SPACE patterns!"
+        
+        self.mini_game_progress = 0
+        self.mini_game_target = 100
+        self.mini_game_time = 0
+        self.mini_game_duration = 5.5
+        self.comedy_meter = 0
+
+    def setup_farming_game(self, objective):
+        """Roel - Farming and cow care"""
+        if "cow" in objective or "care" in objective:
+            self.mini_game_type = 'cow_care'
+            self.mini_game_instruction = "Take care of the cows! Gentle SPACE presses for feeding!"
+        elif "harvest" in objective or "cultivate" in objective:
+            self.mini_game_type = 'crop_harvesting'
+            self.mini_game_instruction = "Harvest the crops! Rhythmic SPACE presses!"
+        elif "wisdom" in objective or "farming" in objective:
+            self.mini_game_type = 'farming_wisdom'
+            self.mini_game_instruction = "Share farming knowledge! Press SPACE to teach!"
+        else:
+            self.mini_game_type = 'barnyard_party'
+            self.mini_game_instruction = "Host the perfect gathering! Well-timed SPACE presses!"
+        
+        self.mini_game_progress = 0
+        self.mini_game_target = 100
+        self.mini_game_time = 0
+        self.mini_game_duration = 6.0
+        self.farm_happiness = 50
+
+    def setup_innovation_game(self, objective):
+        """Alex - Creative inventions and AI knowledge"""
+        if "invention" in objective or "create" in objective:
+            self.mini_game_type = 'invention_workshop'
+            self.mini_game_instruction = "Build amazing inventions! Creative SPACE combinations!"
+        elif "story" in objective or "craft" in objective:
+            self.mini_game_type = 'story_crafting'
+            self.mini_game_instruction = "Craft hilarious stories! Press SPACE to add plot twists!"
+        elif "ai" in objective or "knowledge" in objective:
+            self.mini_game_type = 'ai_exploration'
+            self.mini_game_instruction = "Explore AI concepts! Precise SPACE timing for learning!"
+        else:
+            self.mini_game_type = 'creative_workshop'
+            self.mini_game_instruction = "Lead creative workshops! Inspiring SPACE presses!"
+        
+        self.mini_game_progress = 0
+        self.mini_game_target = 100
+        self.mini_game_time = 0
+        self.mini_game_duration = 7.0
+        self.creativity_sparks = 0
+
+    def setup_mechanical_game(self, objective):
+        """Rick - Mechanical fixes and technical solutions"""
+        if "fix" in objective or "broken" in objective:
+            self.mini_game_type = 'machinery_repair'
+            self.mini_game_instruction = "Fix the machinery! Precise SPACE presses for repairs!"
+        elif "technical" in objective or "solution" in objective:
+            self.mini_game_type = 'technical_problem_solving'
+            self.mini_game_instruction = "Solve technical challenges! Strategic SPACE timing!"
+        elif "firework" in objective or "safely" in objective:
+            self.mini_game_type = 'fireworks_safety'
+            self.mini_game_instruction = "Handle fireworks safely! Careful SPACE timing!"
+        else:
+            self.mini_game_type = 'mechanical_workshop'
+            self.mini_game_instruction = "Teach mechanical skills! Educational SPACE presses!"
+        
+        self.mini_game_progress = 0
+        self.mini_game_target = 100
+        self.mini_game_time = 0
+        self.mini_game_duration = 6.5
+        self.precision_level = 0
+
+    def setup_hacking_game(self, objective):
+        """Suen - Gaming, hacking, and optimization"""
+        if "virtual" in objective or "realm" in objective:
+            self.mini_game_type = 'virtual_mastery'
+            self.mini_game_instruction = "Master virtual realms! Complex SPACE patterns!"
+        elif "hacking" in objective or "challenge" in objective:
+            self.mini_game_type = 'hacking_challenge'
+            self.mini_game_instruction = "Hack the system! Precise SPACE sequences!"
+        elif "score" in objective or "high" in objective:
+            self.mini_game_type = 'high_score_chase'
+            self.mini_game_instruction = "Achieve high scores! Perfect SPACE timing!"
+        else:
+            self.mini_game_type = 'lan_party_hosting'
+            self.mini_game_instruction = "Host epic game nights! Coordinated SPACE presses!"
+        
+        self.mini_game_progress = 0
+        self.mini_game_target = 100
+        self.mini_game_time = 0
+        self.mini_game_duration = 6.0
+        self.hack_success = 0
     
     def update_mini_game(self):
-        """Update mini-game logic"""
+        """Update mini-game logic based on specific game type"""
         self.mini_game_time += 1/self.FPS
         
-        # Different mechanics for different mini-games
-        if self.mini_game_type == 'endurance':
-            # Automatic progress that player must maintain
-            self.mini_game_progress += 0.5
-            # Add some decay
-            if random.random() < 0.1:
-                self.mini_game_progress -= 2
-        elif self.mini_game_type == 'precision':
-            # Slower progress, needs precise timing
-            pass  # Only space bar adds progress
-        elif self.mini_game_type == 'rhythm':
-            # Add automatic rhythm bonus
-            if int(self.mini_game_time * 2) % 2 == 0:
-                self.mini_game_progress += 0.2
+        # Specific mechanics for each friend's mini-games
+        if self.mini_game_type in ['specimen_collection', 'forest_exploration']:
+            # Phrits games - environmental progression
+            if random.random() < 0.03:  # Random discoveries
+                self.mini_game_progress += 8
+                self.specimens_found += 1
+        
+        elif self.mini_game_type in ['stats_analysis', 'tournament_strategy']:
+            # Mika games - analytical progression
+            if int(self.mini_game_time * 3) % 4 == 0:  # Pattern-based
+                self.mini_game_progress += 0.3
+        
+        elif self.mini_game_type in ['disguise_mastery', 'mystery_solving']:
+            # Jordy games - stealth mechanics
+            self.stealth_meter += random.uniform(-1, 1)
+            self.stealth_meter = max(0, min(100, self.stealth_meter))
+            if self.stealth_meter > 70:
+                self.mini_game_progress += 0.8
+        
+        elif self.mini_game_type in ['joke_telling', 'pun_battle']:
+            # Casper games - comedy timing
+            if int(self.mini_game_time * 4) % 3 == 0:  # Comedy rhythm
+                self.comedy_meter += 2
+                self.mini_game_progress += 0.4
+        
+        elif self.mini_game_type in ['cow_care', 'crop_harvesting']:
+            # Roel games - farming progression
+            self.farm_happiness += random.uniform(-0.5, 1.5)
+            self.farm_happiness = max(0, min(100, self.farm_happiness))
+            if self.farm_happiness > 60:
+                self.mini_game_progress += 0.6
+        
+        elif self.mini_game_type in ['invention_workshop', 'story_crafting']:
+            # Alex games - creative bursts
+            if random.random() < 0.05:  # Inspiration moments
+                self.creativity_sparks += 1
+                self.mini_game_progress += 12
+        
+        elif self.mini_game_type in ['machinery_repair', 'fireworks_safety']:
+            # Rick games - precision requirements
+            self.precision_level += random.uniform(-2, 1)
+            self.precision_level = max(0, min(100, self.precision_level))
+            # Only progress with good precision
+            if self.precision_level > 50:
+                self.mini_game_progress += 0.3
+        
+        elif self.mini_game_type in ['hacking_challenge', 'virtual_mastery']:
+            # Suen games - technical complexity
+            if int(self.mini_game_time * 6) % 7 == 0:  # Complex patterns
+                self.hack_success += 1
+                self.mini_game_progress += 0.5
+        
+        # Generic progress for other games
+        else:
+            if random.random() < 0.02:
+                self.mini_game_progress += 1
         
         # Check mini-game completion
         if self.mini_game_time >= self.mini_game_duration:
@@ -434,19 +652,9 @@ class QuestGame:
         pygame.draw.rect(self.screen, self.GREEN, (bar_x, bar_y, progress_width, bar_height))
         pygame.draw.rect(self.screen, self.BLACK, (bar_x, bar_y, bar_width, bar_height), 3)
         
-        # Instructions
-        instructions = {
-            'button_mash': "Press SPACE rapidly!",
-            'precision': "Press SPACE at the right moment!",
-            'endurance': "Maintain progress! Press SPACE when it drops!",
-            'rhythm': "Press SPACE to the rhythm!",
-            'timing': "Wait for the perfect moment!",
-            'pattern': "Follow the pattern! Press SPACE!",
-            'stealth': "Press SPACE quietly and carefully!",
-            'strategy': "Think strategically! Press SPACE wisely!"
-        }
-        
-        instruction = self.small_font.render(instructions.get(self.mini_game_type, "Press SPACE!"), True, self.BLACK)
+        # Show specific instruction for this mini-game
+        instruction_text = getattr(self, 'mini_game_instruction', "Press SPACE to help!")
+        instruction = self.small_font.render(instruction_text, True, self.BLACK)
         instruction_rect = instruction.get_rect(center=(self.WIDTH//2, 400))
         self.screen.blit(instruction, instruction_rect)
         
@@ -458,6 +666,91 @@ class QuestGame:
         # Progress text
         progress_text = self.small_font.render(f"Progress: {int(self.mini_game_progress)}/{self.mini_game_target}", True, self.BLACK)
         self.screen.blit(progress_text, (50, 80))
+        
+        # Draw specific game context visuals
+        self.draw_mini_game_context()
+    
+    def draw_mini_game_context(self):
+        """Draw visual context for specific mini-games"""
+        y_pos = 450
+        
+        # Phrits games - nature context
+        if self.mini_game_type in ['specimen_collection', 'forest_exploration', 'microscope_analysis']:
+            context_text = f"🌱 Specimens Found: {getattr(self, 'specimens_found', 0)}"
+            if self.mini_game_type == 'microscope_analysis':
+                context_text = "🔬 Analyzing microorganisms..."
+            elif self.mini_game_type == 'forest_exploration':
+                context_text = "🌲 Exploring the forest depths..."
+        
+        # Mika games - sports context
+        elif self.mini_game_type in ['stats_analysis', 'tournament_strategy', 'team_coaching']:
+            context_text = f"📊 Correct Analysis: {getattr(self, 'correct_answers', 0)}"
+            if self.mini_game_type == 'tournament_strategy':
+                context_text = "🏆 Planning tournament strategy..."
+            elif self.mini_game_type == 'team_coaching':
+                context_text = "👥 Coaching the team to victory..."
+        
+        # Jordy games - mystery context
+        elif self.mini_game_type in ['disguise_mastery', 'mystery_solving', 'relationship_counseling']:
+            stealth = getattr(self, 'stealth_meter', 50)
+            context_text = f"🎭 Stealth Level: {int(stealth)}/100"
+            if self.mini_game_type == 'mystery_solving':
+                context_text = "🔍 Gathering clues and evidence..."
+            elif self.mini_game_type == 'relationship_counseling':
+                context_text = "💝 Helping resolve relationship issues..."
+        
+        # Casper games - comedy context
+        elif self.mini_game_type in ['joke_telling', 'pun_battle', 'riddle_creation']:
+            comedy = getattr(self, 'comedy_meter', 0)
+            context_text = f"😂 Comedy Power: {int(comedy)}"
+            if self.mini_game_type == 'pun_battle':
+                context_text = "🎯 Crafting devastating puns..."
+            elif self.mini_game_type == 'riddle_creation':
+                context_text = "🧩 Creating mind-bending riddles..."
+        
+        # Roel games - farming context
+        elif self.mini_game_type in ['cow_care', 'crop_harvesting', 'farming_wisdom']:
+            happiness = getattr(self, 'farm_happiness', 50)
+            context_text = f"🐄 Farm Happiness: {int(happiness)}/100"
+            if self.mini_game_type == 'crop_harvesting':
+                context_text = "🌾 Harvesting bountiful crops..."
+            elif self.mini_game_type == 'farming_wisdom':
+                context_text = "📚 Sharing agricultural wisdom..."
+        
+        # Alex games - creative context
+        elif self.mini_game_type in ['invention_workshop', 'story_crafting', 'ai_exploration']:
+            sparks = getattr(self, 'creativity_sparks', 0)
+            context_text = f"💡 Creative Sparks: {sparks}"
+            if self.mini_game_type == 'story_crafting':
+                context_text = "📖 Crafting hilarious stories..."
+            elif self.mini_game_type == 'ai_exploration':
+                context_text = "🤖 Exploring AI concepts..."
+        
+        # Rick games - technical context
+        elif self.mini_game_type in ['machinery_repair', 'technical_problem_solving', 'fireworks_safety']:
+            precision = getattr(self, 'precision_level', 0)
+            context_text = f"🔧 Precision: {int(precision)}/100"
+            if self.mini_game_type == 'fireworks_safety':
+                context_text = "🎆 Handling fireworks with care..."
+            elif self.mini_game_type == 'technical_problem_solving':
+                context_text = "⚙️ Solving complex technical issues..."
+        
+        # Suen games - hacking context
+        elif self.mini_game_type in ['hacking_challenge', 'virtual_mastery', 'high_score_chase']:
+            success = getattr(self, 'hack_success', 0)
+            context_text = f"💻 Systems Hacked: {success}"
+            if self.mini_game_type == 'virtual_mastery':
+                context_text = "🌐 Mastering virtual realms..."
+            elif self.mini_game_type == 'high_score_chase':
+                context_text = "🎮 Chasing the ultimate high score..."
+        
+        else:
+            context_text = "🎯 Working together..."
+        
+        # Render and display the context
+        context_surface = self.small_font.render(context_text, True, self.BLACK)
+        context_rect = context_surface.get_rect(center=(self.WIDTH//2, y_pos))
+        self.screen.blit(context_surface, context_rect)
     
     def draw_ui(self):
         """Draw the game UI"""
