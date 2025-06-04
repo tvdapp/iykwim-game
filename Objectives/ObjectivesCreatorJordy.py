@@ -15,4 +15,4 @@ class ObjectivesCreatorJordy(ObjectivesCreator):
                 "Confuse Enemies with Wacky Disguises",
                 "Solve Mysteries in Style, Complete with Dramatic Reveals"
             ]
-        ).show_objectives()
+        )

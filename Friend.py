@@ -5,7 +5,7 @@ class Friend:
         self.name = name
         self.health = 100
         self.special_ability = special_ability
-        self.objectives = objective_creator.generate_data()
+        self.objectives_list = objective_creator.generate_data()
         self.color_strategy = color_strategy
         self.image = pygame.transform.scale(pygame.image.load(image_string), character_size)
         self.x = xy[0]
@@ -21,7 +21,17 @@ class Friend:
         return self.health > 0
 
     def show_objectives(self):
-        self.objectives.show_objectives()
+        self.objectives_list.show_objectives()
+
+    def get_random_objective(self):
+        return self.objectives_list.get_random_objective()
+
+    # def get_objectives(self):
+
+
+    def set_position(self, x, y):
+        self.x = x
+        self.y = y
 
     def get_image(self): 
         return self.image

@@ -1,5 +1,6 @@
 
 from Objectives import Objective
+import random
 
 
 class ObjectivesList:
@@ -18,6 +19,9 @@ class ObjectivesList:
 
     def get_objectives(self):
         return self.objectives
+    
+    def get_random_objective(self):
+        return self.objectives[random.randint(0, len(self.objectives) - 1)]
 
     def add_objective(self, description):
         self.objectives.append(Objective(description))

@@ -70,6 +70,8 @@ suen = Friend("Suen (Suenpai)", random_position(), MinMaxMastery(), ObjectivesCr
 # List to store friend characters
 friends = [phrits, mika, jordy, casper, roel, alex, rick, suen]  # Add your friends here
 
+
+
 # Initial position for the player
 your_character = pygame.Rect(0, 0, character_size[0], character_size[1])
 your_character_image = pygame.transform.scale(pygame.image.load(base_url + "/" + "thijs.png"), character_size)
@@ -107,8 +109,8 @@ while running:
         ):
             # The player is close to the friend, you can define interactions here
             print(f"Interacting with {friend.name}")
-            if friend.objectives:
-                friend.show_objectives()
+            # if friend.objectives_list:
+            print(f"Hey! I'd like to {friend.get_random_objective().get_objective()}, could you maybe help me with that?")
                 # print(f"{friend.name}'s Objectives:")
                 # for objective in friend.show_objectives():
                     # print(f"- {objective}")
