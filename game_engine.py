@@ -96,6 +96,47 @@ class QuestGame:
         self.mini_game_time = 0
         self.mini_game_duration = 5.0  # seconds
         
+        # Specific mini-game data
+        self.plant_positions = []
+        self.selected_plant = None
+        self.correct_plants = 0
+        self.mouse_pos = (0, 0)
+        
+        # Sports analysis game
+        self.stats_pattern = []
+        self.player_pattern = []
+        self.current_stat = 0
+        
+        # Mystery game
+        self.clues = []
+        self.found_clues = []
+        self.mystery_grid = []
+        
+        # Joke game
+        self.joke_words = []
+        self.current_joke = ""
+        self.joke_timing = 0
+        
+        # Farming game  
+        self.cows = []
+        self.cow_happiness = []
+        self.feed_level = 50
+        
+        # Invention game
+        self.invention_parts = []
+        self.connected_parts = []
+        self.circuit_complete = False
+        
+        # Mechanical game
+        self.broken_parts = []
+        self.fixed_parts = []
+        self.tool_selected = None
+        
+        # Hacking game
+        self.code_sequence = []
+        self.player_sequence = []
+        self.hack_grid = []
+        
         # Initialize game objects
         self.setup_game()
         
@@ -158,13 +199,17 @@ class QuestGame:
                     elif event.key == pygame.K_n:
                         self.decline_quest()
                 elif self.state == GameState.MINI_GAME:
-                    if event.key == pygame.K_SPACE:
-                        self.mini_game_progress += 10
+                    self.handle_mini_game_input(event)
                 elif self.state in [GameState.GAME_OVER, GameState.VICTORY]:
                     if event.key == pygame.K_r:
                         self.restart_game()
                     elif event.key == pygame.K_q:
                         self.running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if self.state == GameState.MINI_GAME:
+                    self.handle_mini_game_mouse(event)
+            elif event.type == pygame.MOUSEMOTION:
+                self.mouse_pos = event.pos
     
     def update(self):
         """Update game logic based on current state"""
@@ -260,172 +305,191 @@ class QuestGame:
             self.mini_game_duration = 5.0
     
     def setup_biodiversity_game(self, objective):
-        """Phrits - Biodiversity exploration and specimen collection"""
-        if "plant" in objective or "specimen" in objective:
-            self.mini_game_type = 'specimen_collection'
-            self.mini_game_instruction = "Collect rare specimens! Press SPACE when you see plants!"
-        elif "forest" in objective or "explore" in objective:
-            self.mini_game_type = 'forest_exploration'
-            self.mini_game_instruction = "Navigate the forest! Use SPACE to move carefully!"
-        elif "microorganism" in objective or "analyze" in objective:
-            self.mini_game_type = 'microscope_analysis'
-            self.mini_game_instruction = "Focus the microscope! Press SPACE at the right moment!"
-        else:
-            self.mini_game_type = 'fitness_challenge'
-            self.mini_game_instruction = "Complete the fitness challenge! Rapid SPACE presses!"
+        """Phrits - Plant Collection - Click on plants to collect them"""
+        self.mini_game_type = 'plant_collection'
+        self.mini_game_instruction = "Click on the rare plants to collect them!"
+        
+        # Create random plant positions
+        self.plant_positions = []
+        for _ in range(8):
+            x = random.randint(100, self.WIDTH - 100)
+            y = random.randint(200, 500)
+            plant_type = random.choice(['🌿', '🍄', '🌺', '🌻', '🌱'])
+            self.plant_positions.append({'x': x, 'y': y, 'type': plant_type, 'collected': False})
         
         self.mini_game_progress = 0
-        self.mini_game_target = 100
+        self.mini_game_target = 6  # Collect 6 plants
         self.mini_game_time = 0
-        self.mini_game_duration = 6.0
+        self.mini_game_duration = 10.0
         self.specimens_found = 0
 
     def setup_sports_analysis_game(self, objective):
-        """Mika - Sports statistics and coaching"""
-        if "statistic" in objective or "analyze" in objective:
-            self.mini_game_type = 'stats_analysis'
-            self.mini_game_instruction = "Analyze the data patterns! Press SPACE when numbers align!"
-        elif "tournament" in objective or "win" in objective:
-            self.mini_game_type = 'tournament_strategy'
-            self.mini_game_instruction = "Make strategic decisions! Time your SPACE presses!"
-        elif "coach" in objective:
-            self.mini_game_type = 'team_coaching'
-            self.mini_game_instruction = "Guide your team! Press SPACE to give instructions!"
-        else:
-            self.mini_game_type = 'trivia_challenge'
-            self.mini_game_instruction = "Answer sports trivia! Quick SPACE presses for correct answers!"
+        """Mika - Pattern Matching - Match the statistical patterns"""
+        self.mini_game_type = 'pattern_matching'
+        self.mini_game_instruction = "Match the statistical pattern! Press 1-4 keys to match the sequence!"
+        
+        # Create a pattern sequence 
+        self.stats_pattern = [random.randint(1, 4) for _ in range(6)]
+        self.player_pattern = []
+        self.current_stat = 0
         
         self.mini_game_progress = 0
-        self.mini_game_target = 100
+        self.mini_game_target = 5  # Complete 5 patterns
         self.mini_game_time = 0
-        self.mini_game_duration = 7.0
+        self.mini_game_duration = 15.0
         self.correct_answers = 0
 
     def setup_mystery_disguise_game(self, objective):
-        """Jordy - Mystery solving and disguise mastery"""
-        if "disguise" in objective or "art" in objective:
-            self.mini_game_type = 'disguise_mastery'
-            self.mini_game_instruction = "Perfect your disguise! Hold SPACE to blend in!"
-        elif "mystery" in objective or "solve" in objective:
-            self.mini_game_type = 'mystery_solving'
-            self.mini_game_instruction = "Gather clues! Press SPACE to investigate!"
-        elif "relationship" in objective:
-            self.mini_game_type = 'relationship_counseling'
-            self.mini_game_instruction = "Help resolve conflicts! Press SPACE at the right moments!"
-        else:
-            self.mini_game_type = 'car_show_organization'
-            self.mini_game_instruction = "Organize the perfect car show! Precise SPACE timing!"
+        """Jordy - Memory Card Matching - Find matching clue pairs"""
+        self.mini_game_type = 'memory_cards'
+        self.mini_game_instruction = "Click cards to find matching clue pairs!"
         
+        # Create memory card grid (4x4)
+        clue_symbols = ['🔍', '🗝️', '📄', '👤', '🎭', '🚗', '💎', '🔮']
+        all_cards = clue_symbols + clue_symbols  # Pairs
+        random.shuffle(all_cards)
+        
+        self.mystery_grid = []
+        for i in range(4):
+            row = []
+            for j in range(4):
+                card = {
+                    'symbol': all_cards[i*4 + j],
+                    'revealed': False,
+                    'matched': False,
+                    'x': 300 + j * 70,
+                    'y': 250 + i * 70
+                }
+                row.append(card)
+            self.mystery_grid.append(row)
+        
+        self.revealed_cards = []
         self.mini_game_progress = 0
-        self.mini_game_target = 100
+        self.mini_game_target = 8  # Match all 8 pairs
         self.mini_game_time = 0
-        self.mini_game_duration = 6.5
-        self.stealth_meter = 50
+        self.mini_game_duration = 20.0
 
     def setup_wordplay_game(self, objective):
-        """Casper - Jokes, puns, and wordplay"""
-        if "joke" in objective or "funny" in objective:
-            self.mini_game_type = 'joke_telling'
-            self.mini_game_instruction = "Time your punchlines! Press SPACE for perfect comedy timing!"
-        elif "pun" in objective or "wordplay" in objective:
-            self.mini_game_type = 'pun_battle'
-            self.mini_game_instruction = "Create puns! Rapid SPACE presses for wordplay combos!"
-        elif "riddle" in objective or "puzzle" in objective:
-            self.mini_game_type = 'riddle_creation'
-            self.mini_game_instruction = "Craft clever riddles! Press SPACE to build word puzzles!"
-        else:
-            self.mini_game_type = 'confusion_tactics'
-            self.mini_game_instruction = "Confuse with wit! Random SPACE patterns!"
+        """Casper - Word Completion - Complete the jokes by typing missing words"""
+        self.mini_game_type = 'word_completion'
+        self.mini_game_instruction = "Type the missing word to complete the joke!"
+        
+        # Joke templates with missing words
+        self.joke_templates = [
+            ("Why don't scientists trust atoms? Because they make up everything and they're always ___!", "lying"),
+            ("What do you call a fake noodle? An ___!", "impasta"),
+            ("Why did the scarecrow win an award? He was outstanding in his ___!", "field"),
+            ("What do you call a bear with no teeth? A ___ bear!", "gummy"),
+            ("Why don't eggs tell jokes? They'd ___!", "crack"),
+        ]
+        
+        self.current_joke_index = 0
+        self.current_answer = ""
+        self.typed_answer = ""
         
         self.mini_game_progress = 0
-        self.mini_game_target = 100
+        self.mini_game_target = 3  # Complete 3 jokes
         self.mini_game_time = 0
-        self.mini_game_duration = 5.5
-        self.comedy_meter = 0
+        self.mini_game_duration = 20.0
 
     def setup_farming_game(self, objective):
-        """Roel - Farming and cow care"""
-        if "cow" in objective or "care" in objective:
-            self.mini_game_type = 'cow_care'
-            self.mini_game_instruction = "Take care of the cows! Gentle SPACE presses for feeding!"
-        elif "harvest" in objective or "cultivate" in objective:
-            self.mini_game_type = 'crop_harvesting'
-            self.mini_game_instruction = "Harvest the crops! Rhythmic SPACE presses!"
-        elif "wisdom" in objective or "farming" in objective:
-            self.mini_game_type = 'farming_wisdom'
-            self.mini_game_instruction = "Share farming knowledge! Press SPACE to teach!"
-        else:
-            self.mini_game_type = 'barnyard_party'
-            self.mini_game_instruction = "Host the perfect gathering! Well-timed SPACE presses!"
+        """Roel - Cow Feeding - Move mouse to feed the cows"""
+        self.mini_game_type = 'cow_feeding'
+        self.mini_game_instruction = "Move your mouse near the cows to feed them!"
         
+        # Create cow positions and happiness levels
+        self.cows = []
+        for i in range(5):
+            cow = {
+                'x': random.randint(100, self.WIDTH - 100),
+                'y': random.randint(300, 500),
+                'happiness': random.randint(30, 70),
+                'fed': False,
+                'last_feed_time': 0
+            }
+            self.cows.append(cow)
+        
+        self.feed_radius = 80
         self.mini_game_progress = 0
-        self.mini_game_target = 100
+        self.mini_game_target = 5  # Feed all 5 cows to happiness > 90
         self.mini_game_time = 0
-        self.mini_game_duration = 6.0
-        self.farm_happiness = 50
+        self.mini_game_duration = 15.0
 
     def setup_innovation_game(self, objective):
-        """Alex - Creative inventions and AI knowledge"""
-        if "invention" in objective or "create" in objective:
-            self.mini_game_type = 'invention_workshop'
-            self.mini_game_instruction = "Build amazing inventions! Creative SPACE combinations!"
-        elif "story" in objective or "craft" in objective:
-            self.mini_game_type = 'story_crafting'
-            self.mini_game_instruction = "Craft hilarious stories! Press SPACE to add plot twists!"
-        elif "ai" in objective or "knowledge" in objective:
-            self.mini_game_type = 'ai_exploration'
-            self.mini_game_instruction = "Explore AI concepts! Precise SPACE timing for learning!"
-        else:
-            self.mini_game_type = 'creative_workshop'
-            self.mini_game_instruction = "Lead creative workshops! Inspiring SPACE presses!"
+        """Alex - Circuit Building - Connect invention parts by clicking them"""
+        self.mini_game_type = 'circuit_building'
+        self.mini_game_instruction = "Click parts to connect them and complete the invention!"
+        
+        # Create invention parts that need to be connected
+        part_types = ['💡', '🔧', '⚙️', '🔋', '📡', '🖥️']
+        self.invention_parts = []
+        for i, part_type in enumerate(part_types):
+            part = {
+                'type': part_type,
+                'x': 200 + (i % 3) * 150,
+                'y': 300 + (i // 3) * 100,
+                'connected': False,
+                'id': i
+            }
+            self.invention_parts.append(part)
+        
+        self.connection_order = list(range(len(part_types)))
+        random.shuffle(self.connection_order)
+        self.current_connection = 0
         
         self.mini_game_progress = 0
-        self.mini_game_target = 100
+        self.mini_game_target = 6  # Connect all 6 parts in order
         self.mini_game_time = 0
-        self.mini_game_duration = 7.0
-        self.creativity_sparks = 0
+        self.mini_game_duration = 18.0
 
     def setup_mechanical_game(self, objective):
-        """Rick - Mechanical fixes and technical solutions"""
-        if "fix" in objective or "broken" in objective:
-            self.mini_game_type = 'machinery_repair'
-            self.mini_game_instruction = "Fix the machinery! Precise SPACE presses for repairs!"
-        elif "technical" in objective or "solution" in objective:
-            self.mini_game_type = 'technical_problem_solving'
-            self.mini_game_instruction = "Solve technical challenges! Strategic SPACE timing!"
-        elif "firework" in objective or "safely" in objective:
-            self.mini_game_type = 'fireworks_safety'
-            self.mini_game_instruction = "Handle fireworks safely! Careful SPACE timing!"
-        else:
-            self.mini_game_type = 'mechanical_workshop'
-            self.mini_game_instruction = "Teach mechanical skills! Educational SPACE presses!"
+        """Rick - Tool Selection - Choose the right tools for broken parts"""
+        self.mini_game_type = 'tool_selection'
+        self.mini_game_instruction = "Click the right tool for each broken part!"
+        
+        # Create broken parts and corresponding tools
+        self.broken_parts = [
+            {'part': '🔩', 'tool': '🔧', 'x': 200, 'y': 300, 'fixed': False},
+            {'part': '⚡', 'tool': '🪛', 'x': 350, 'y': 300, 'fixed': False},
+            {'part': '🔌', 'tool': '✂️', 'x': 500, 'y': 300, 'fixed': False},
+            {'part': '⚙️', 'tool': '🔨', 'x': 650, 'y': 300, 'fixed': False},
+        ]
+        
+        self.available_tools = ['🔧', '🪛', '✂️', '🔨', '📏', '🪚']
+        random.shuffle(self.available_tools)
+        self.selected_tool = None
         
         self.mini_game_progress = 0
-        self.mini_game_target = 100
+        self.mini_game_target = 4  # Fix all 4 parts
         self.mini_game_time = 0
-        self.mini_game_duration = 6.5
-        self.precision_level = 0
+        self.mini_game_duration = 15.0
 
     def setup_hacking_game(self, objective):
-        """Suen - Gaming, hacking, and optimization"""
-        if "virtual" in objective or "realm" in objective:
-            self.mini_game_type = 'virtual_mastery'
-            self.mini_game_instruction = "Master virtual realms! Complex SPACE patterns!"
-        elif "hacking" in objective or "challenge" in objective:
-            self.mini_game_type = 'hacking_challenge'
-            self.mini_game_instruction = "Hack the system! Precise SPACE sequences!"
-        elif "score" in objective or "high" in objective:
-            self.mini_game_type = 'high_score_chase'
-            self.mini_game_instruction = "Achieve high scores! Perfect SPACE timing!"
-        else:
-            self.mini_game_type = 'lan_party_hosting'
-            self.mini_game_instruction = "Host epic game nights! Coordinated SPACE presses!"
+        """Suen - Code Sequence - Enter the correct arrow key sequences"""
+        self.mini_game_type = 'code_sequence'
+        self.mini_game_instruction = "Enter the arrow key sequences shown! ↑↓←→"
+        
+        # Create code sequences using arrow keys
+        self.code_sequences = []
+        arrow_keys = ['UP', 'DOWN', 'LEFT', 'RIGHT']
+        
+        for _ in range(5):
+            sequence = [random.choice(arrow_keys) for _ in range(4)]
+            self.code_sequences.append({
+                'sequence': sequence,
+                'current_input': [],
+                'completed': False,
+                'display_time': 3.0  # Show sequence for 3 seconds
+            })
+        
+        self.current_sequence_index = 0
+        self.sequence_display_timer = 0
+        self.showing_sequence = True
         
         self.mini_game_progress = 0
-        self.mini_game_target = 100
+        self.mini_game_target = 5  # Complete all 5 sequences
         self.mini_game_time = 0
-        self.mini_game_duration = 6.0
-        self.hack_success = 0
+        self.mini_game_duration = 25.0
     
     def update_mini_game(self):
         """Update mini-game logic based on specific game type"""
@@ -488,6 +552,26 @@ class QuestGame:
             if random.random() < 0.02:
                 self.mini_game_progress += 1
         
+        # Update specific mini-game mechanics
+        if self.mini_game_type == 'cow_feeding':
+            # Update cow feeding with mouse proximity
+            for cow in self.cows:
+                if not cow['fed']:
+                    distance = math.sqrt((self.mouse_pos[0] - cow['x'])**2 + (self.mouse_pos[1] - cow['y'])**2)
+                    if distance < self.feed_radius:
+                        cow['happiness'] = min(100, cow['happiness'] + 1)
+                        if cow['happiness'] >= 90:
+                            cow['fed'] = True
+                            self.mini_game_progress += 1
+        
+        elif self.mini_game_type == 'code_sequence':
+            # Handle sequence display timing
+            if self.showing_sequence:
+                self.sequence_display_timer += 1/self.FPS
+                if self.sequence_display_timer >= 3.0:
+                    self.showing_sequence = False
+                    self.sequence_display_timer = 0
+        
         # Check mini-game completion
         if self.mini_game_time >= self.mini_game_duration:
             self.complete_mini_game()
@@ -495,6 +579,157 @@ class QuestGame:
             self.complete_mini_game()
         elif self.mini_game_progress < 0:
             self.fail_mini_game()
+    
+    def handle_mini_game_input(self, event):
+        """Handle keyboard input for mini-games"""
+        if self.mini_game_type == 'pattern_matching':
+            # Mika's pattern matching - number keys 1-4
+            if event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4]:
+                number = event.key - pygame.K_0
+                self.player_pattern.append(number)
+                
+                # Check if pattern matches so far
+                if len(self.player_pattern) <= len(self.stats_pattern):
+                    if self.player_pattern[-1] == self.stats_pattern[len(self.player_pattern)-1]:
+                        # Correct so far
+                        if len(self.player_pattern) == len(self.stats_pattern):
+                            # Pattern complete!
+                            self.mini_game_progress += 1
+                            self.correct_answers += 1
+                            # Generate new pattern
+                            self.stats_pattern = [random.randint(1, 4) for _ in range(6)]
+                            self.player_pattern = []
+                    else:
+                        # Wrong! Reset
+                        self.player_pattern = []
+        
+        elif self.mini_game_type == 'word_completion':
+            # Casper's word completion - type letters
+            if event.unicode.isalpha():
+                self.typed_answer += event.unicode.lower()
+            elif event.key == pygame.K_BACKSPACE:
+                self.typed_answer = self.typed_answer[:-1]
+            elif event.key == pygame.K_RETURN:
+                # Check answer
+                if self.current_joke_index < len(self.joke_templates):
+                    correct_answer = self.joke_templates[self.current_joke_index][1].lower()
+                    if self.typed_answer.lower() == correct_answer:
+                        self.mini_game_progress += 1
+                        self.current_joke_index += 1
+                        self.typed_answer = ""
+                    else:
+                        self.typed_answer = ""
+        
+        elif self.mini_game_type == 'code_sequence':
+            # Suen's code sequence - arrow keys
+            if not self.showing_sequence and self.current_sequence_index < len(self.code_sequences):
+                current_seq = self.code_sequences[self.current_sequence_index]
+                
+                key_map = {
+                    pygame.K_UP: 'UP',
+                    pygame.K_DOWN: 'DOWN', 
+                    pygame.K_LEFT: 'LEFT',
+                    pygame.K_RIGHT: 'RIGHT'
+                }
+                
+                if event.key in key_map:
+                    current_seq['current_input'].append(key_map[event.key])
+                    
+                    # Check if sequence is correct so far
+                    if len(current_seq['current_input']) <= len(current_seq['sequence']):
+                        if (current_seq['current_input'][-1] == 
+                            current_seq['sequence'][len(current_seq['current_input'])-1]):
+                            # Correct so far
+                            if len(current_seq['current_input']) == len(current_seq['sequence']):
+                                # Sequence complete!
+                                current_seq['completed'] = True
+                                self.mini_game_progress += 1
+                                self.current_sequence_index += 1
+                                self.showing_sequence = True
+                                self.sequence_display_timer = 0
+                        else:
+                            # Wrong! Reset
+                            current_seq['current_input'] = []
+    
+    def handle_mini_game_mouse(self, event):
+        """Handle mouse clicks for mini-games"""
+        mouse_x, mouse_y = event.pos
+        
+        if self.mini_game_type == 'plant_collection':
+            # Phrits' plant collection - click plants
+            for plant in self.plant_positions:
+                if not plant['collected']:
+                    distance = math.sqrt((mouse_x - plant['x'])**2 + (mouse_y - plant['y'])**2)
+                    if distance < 30:  # Click radius
+                        plant['collected'] = True
+                        self.mini_game_progress += 1
+                        self.specimens_found += 1
+        
+        elif self.mini_game_type == 'memory_cards':
+            # Jordy's memory cards - click cards
+            for row in self.mystery_grid:
+                for card in row:
+                    if (mouse_x >= card['x'] and mouse_x <= card['x'] + 60 and
+                        mouse_y >= card['y'] and mouse_y <= card['y'] + 60):
+                        if not card['revealed'] and not card['matched']:
+                            card['revealed'] = True
+                            self.revealed_cards.append(card)
+                            
+                            if len(self.revealed_cards) == 2:
+                                # Check for match
+                                if (self.revealed_cards[0]['symbol'] == 
+                                    self.revealed_cards[1]['symbol']):
+                                    # Match found!
+                                    for revealed_card in self.revealed_cards:
+                                        revealed_card['matched'] = True
+                                    self.mini_game_progress += 1
+                                else:
+                                    # No match, hide cards after delay
+                                    pygame.time.set_timer(pygame.USEREVENT + 1, 1000)
+                                self.revealed_cards = []
+        
+        elif self.mini_game_type == 'circuit_building':
+            # Alex's circuit building - click parts in order
+            for part in self.invention_parts:
+                if (mouse_x >= part['x'] and mouse_x <= part['x'] + 50 and
+                    mouse_y >= part['y'] and mouse_y <= part['y'] + 50):
+                    if not part['connected']:
+                        expected_id = self.connection_order[self.current_connection]
+                        if part['id'] == expected_id:
+                            part['connected'] = True
+                            self.current_connection += 1
+                            self.mini_game_progress += 1
+                        else:
+                            # Wrong part, reset
+                            for p in self.invention_parts:
+                                p['connected'] = False
+                            self.current_connection = 0
+                            self.mini_game_progress = 0
+        
+        elif self.mini_game_type == 'tool_selection':
+            # Rick's tool selection - click tools then parts
+            # First check if clicking a tool
+            for i, tool in enumerate(self.available_tools):
+                tool_x = 200 + i * 80
+                tool_y = 450
+                if (mouse_x >= tool_x and mouse_x <= tool_x + 60 and
+                    mouse_y >= tool_y and mouse_y <= tool_y + 60):
+                    self.selected_tool = tool
+                    return
+            
+            # Then check if clicking a broken part with selected tool
+            if self.selected_tool:
+                for part in self.broken_parts:
+                    if not part['fixed']:
+                        if (mouse_x >= part['x'] and mouse_x <= part['x'] + 60 and
+                            mouse_y >= part['y'] and mouse_y <= part['y'] + 60):
+                            if self.selected_tool == part['tool']:
+                                part['fixed'] = True
+                                self.mini_game_progress += 1
+                                self.selected_tool = None
+                            else:
+                                # Wrong tool, deselect
+                                self.selected_tool = None
     
     def complete_mini_game(self):
         """Complete the mini-game successfully"""
@@ -671,86 +906,153 @@ class QuestGame:
         self.draw_mini_game_context()
     
     def draw_mini_game_context(self):
-        """Draw visual context for specific mini-games"""
-        y_pos = 450
+        """Draw the actual mini-game interface"""
+        if self.mini_game_type == 'plant_collection':
+            # Draw plants to collect
+            for plant in self.plant_positions:
+                if not plant['collected']:
+                    # Draw plant
+                    plant_surface = self.font.render(plant['type'], True, self.BLACK)
+                    plant_rect = plant_surface.get_rect(center=(plant['x'], plant['y']))
+                    self.screen.blit(plant_surface, plant_rect)
+                    # Draw collection circle
+                    pygame.draw.circle(self.screen, self.GREEN, (plant['x'], plant['y']), 25, 2)
         
-        # Phrits games - nature context
-        if self.mini_game_type in ['specimen_collection', 'forest_exploration', 'microscope_analysis']:
-            context_text = f"🌱 Specimens Found: {getattr(self, 'specimens_found', 0)}"
-            if self.mini_game_type == 'microscope_analysis':
-                context_text = "🔬 Analyzing microorganisms..."
-            elif self.mini_game_type == 'forest_exploration':
-                context_text = "🌲 Exploring the forest depths..."
+        elif self.mini_game_type == 'pattern_matching':
+            # Draw the pattern to match
+            pattern_text = "Pattern: " + " ".join([str(x) for x in self.stats_pattern])
+            pattern_surface = self.small_font.render(pattern_text, True, self.BLACK)
+            self.screen.blit(pattern_surface, (50, 450))
+            
+            # Draw player's current input
+            input_text = "Input: " + " ".join([str(x) for x in self.player_pattern])
+            input_surface = self.small_font.render(input_text, True, self.BLUE)
+            self.screen.blit(input_surface, (50, 480))
+            
+            # Draw number buttons
+            for i in range(1, 5):
+                button_x = 300 + i * 80
+                button_y = 350
+                pygame.draw.rect(self.screen, self.LIGHT_GRAY, (button_x, button_y, 60, 60))
+                pygame.draw.rect(self.screen, self.BLACK, (button_x, button_y, 60, 60), 2)
+                number_surface = self.font.render(str(i), True, self.BLACK)
+                number_rect = number_surface.get_rect(center=(button_x + 30, button_y + 30))
+                self.screen.blit(number_surface, number_rect)
         
-        # Mika games - sports context
-        elif self.mini_game_type in ['stats_analysis', 'tournament_strategy', 'team_coaching']:
-            context_text = f"📊 Correct Analysis: {getattr(self, 'correct_answers', 0)}"
-            if self.mini_game_type == 'tournament_strategy':
-                context_text = "🏆 Planning tournament strategy..."
-            elif self.mini_game_type == 'team_coaching':
-                context_text = "👥 Coaching the team to victory..."
+        elif self.mini_game_type == 'memory_cards':
+            # Draw memory card grid
+            for row in self.mystery_grid:
+                for card in row:
+                    # Card background
+                    card_color = self.GREEN if card['matched'] else self.LIGHT_GRAY
+                    pygame.draw.rect(self.screen, card_color, (card['x'], card['y'], 60, 60))
+                    pygame.draw.rect(self.screen, self.BLACK, (card['x'], card['y'], 60, 60), 2)
+                    
+                    # Card content
+                    if card['revealed'] or card['matched']:
+                        symbol_surface = self.font.render(card['symbol'], True, self.BLACK)
+                        symbol_rect = symbol_surface.get_rect(center=(card['x'] + 30, card['y'] + 30))
+                        self.screen.blit(symbol_surface, symbol_rect)
+                    else:
+                        # Hidden card
+                        pygame.draw.rect(self.screen, self.GRAY, (card['x'] + 5, card['y'] + 5, 50, 50))
         
-        # Jordy games - mystery context
-        elif self.mini_game_type in ['disguise_mastery', 'mystery_solving', 'relationship_counseling']:
-            stealth = getattr(self, 'stealth_meter', 50)
-            context_text = f"🎭 Stealth Level: {int(stealth)}/100"
-            if self.mini_game_type == 'mystery_solving':
-                context_text = "🔍 Gathering clues and evidence..."
-            elif self.mini_game_type == 'relationship_counseling':
-                context_text = "💝 Helping resolve relationship issues..."
+        elif self.mini_game_type == 'word_completion':
+            # Draw current joke
+            if self.current_joke_index < len(self.joke_templates):
+                joke, answer = self.joke_templates[self.current_joke_index]
+                joke_surface = self.small_font.render(joke, True, self.BLACK)
+                joke_rect = joke_surface.get_rect(center=(self.WIDTH//2, 350))
+                self.screen.blit(joke_surface, joke_rect)
+                
+                # Draw typed answer
+                answer_text = f"Your answer: {self.typed_answer}"
+                answer_surface = self.small_font.render(answer_text, True, self.BLUE)
+                answer_rect = answer_surface.get_rect(center=(self.WIDTH//2, 400))
+                self.screen.blit(answer_surface, answer_rect)
         
-        # Casper games - comedy context
-        elif self.mini_game_type in ['joke_telling', 'pun_battle', 'riddle_creation']:
-            comedy = getattr(self, 'comedy_meter', 0)
-            context_text = f"😂 Comedy Power: {int(comedy)}"
-            if self.mini_game_type == 'pun_battle':
-                context_text = "🎯 Crafting devastating puns..."
-            elif self.mini_game_type == 'riddle_creation':
-                context_text = "🧩 Creating mind-bending riddles..."
+        elif self.mini_game_type == 'cow_feeding':
+            # Draw cows
+            for cow in self.cows:
+                # Cow emoji
+                cow_surface = self.font.render('🐄', True, self.BLACK)
+                cow_rect = cow_surface.get_rect(center=(cow['x'], cow['y']))
+                self.screen.blit(cow_surface, cow_rect)
+                
+                # Happiness bar
+                bar_width = 60
+                bar_height = 8
+                bar_x = cow['x'] - bar_width // 2
+                bar_y = cow['y'] - 40
+                
+                pygame.draw.rect(self.screen, self.RED, (bar_x, bar_y, bar_width, bar_height))
+                pygame.draw.rect(self.screen, self.GREEN, (bar_x, bar_y, 
+                               int(bar_width * cow['happiness'] / 100), bar_height))
+                
+                # Feeding radius
+                if not cow['fed']:
+                    distance = math.sqrt((self.mouse_pos[0] - cow['x'])**2 + (self.mouse_pos[1] - cow['y'])**2)
+                    if distance < self.feed_radius:
+                        pygame.draw.circle(self.screen, (0, 255, 0, 50), (cow['x'], cow['y']), self.feed_radius, 2)
         
-        # Roel games - farming context
-        elif self.mini_game_type in ['cow_care', 'crop_harvesting', 'farming_wisdom']:
-            happiness = getattr(self, 'farm_happiness', 50)
-            context_text = f"🐄 Farm Happiness: {int(happiness)}/100"
-            if self.mini_game_type == 'crop_harvesting':
-                context_text = "🌾 Harvesting bountiful crops..."
-            elif self.mini_game_type == 'farming_wisdom':
-                context_text = "📚 Sharing agricultural wisdom..."
+        elif self.mini_game_type == 'circuit_building':
+            # Draw invention parts
+            for part in self.invention_parts:
+                part_color = self.GREEN if part['connected'] else self.LIGHT_GRAY
+                pygame.draw.rect(self.screen, part_color, (part['x'], part['y'], 50, 50))
+                pygame.draw.rect(self.screen, self.BLACK, (part['x'], part['y'], 50, 50), 2)
+                
+                part_surface = self.font.render(part['type'], True, self.BLACK)
+                part_rect = part_surface.get_rect(center=(part['x'] + 25, part['y'] + 25))
+                self.screen.blit(part_surface, part_rect)
+            
+            # Show connection order
+            if self.current_connection < len(self.connection_order):
+                next_part_id = self.connection_order[self.current_connection]
+                order_text = f"Connect: {self.invention_parts[next_part_id]['type']}"
+                order_surface = self.small_font.render(order_text, True, self.BLACK)
+                self.screen.blit(order_surface, (50, 450))
         
-        # Alex games - creative context
-        elif self.mini_game_type in ['invention_workshop', 'story_crafting', 'ai_exploration']:
-            sparks = getattr(self, 'creativity_sparks', 0)
-            context_text = f"💡 Creative Sparks: {sparks}"
-            if self.mini_game_type == 'story_crafting':
-                context_text = "📖 Crafting hilarious stories..."
-            elif self.mini_game_type == 'ai_exploration':
-                context_text = "🤖 Exploring AI concepts..."
+        elif self.mini_game_type == 'tool_selection':
+            # Draw available tools
+            for i, tool in enumerate(self.available_tools):
+                tool_x = 200 + i * 80
+                tool_y = 450
+                tool_color = self.BLUE if self.selected_tool == tool else self.LIGHT_GRAY
+                pygame.draw.rect(self.screen, tool_color, (tool_x, tool_y, 60, 60))
+                pygame.draw.rect(self.screen, self.BLACK, (tool_x, tool_y, 60, 60), 2)
+                
+                tool_surface = self.font.render(tool, True, self.BLACK)
+                tool_rect = tool_surface.get_rect(center=(tool_x + 30, tool_y + 30))
+                self.screen.blit(tool_surface, tool_rect)
+            
+            # Draw broken parts
+            for part in self.broken_parts:
+                part_color = self.GREEN if part['fixed'] else self.RED
+                pygame.draw.rect(self.screen, part_color, (part['x'], part['y'], 60, 60))
+                pygame.draw.rect(self.screen, self.BLACK, (part['x'], part['y'], 60, 60), 2)
+                
+                part_surface = self.font.render(part['part'], True, self.BLACK)
+                part_rect = part_surface.get_rect(center=(part['x'] + 30, part['y'] + 30))
+                self.screen.blit(part_surface, part_rect)
         
-        # Rick games - technical context
-        elif self.mini_game_type in ['machinery_repair', 'technical_problem_solving', 'fireworks_safety']:
-            precision = getattr(self, 'precision_level', 0)
-            context_text = f"🔧 Precision: {int(precision)}/100"
-            if self.mini_game_type == 'fireworks_safety':
-                context_text = "🎆 Handling fireworks with care..."
-            elif self.mini_game_type == 'technical_problem_solving':
-                context_text = "⚙️ Solving complex technical issues..."
-        
-        # Suen games - hacking context
-        elif self.mini_game_type in ['hacking_challenge', 'virtual_mastery', 'high_score_chase']:
-            success = getattr(self, 'hack_success', 0)
-            context_text = f"💻 Systems Hacked: {success}"
-            if self.mini_game_type == 'virtual_mastery':
-                context_text = "🌐 Mastering virtual realms..."
-            elif self.mini_game_type == 'high_score_chase':
-                context_text = "🎮 Chasing the ultimate high score..."
-        
-        else:
-            context_text = "🎯 Working together..."
-        
-        # Render and display the context
-        context_surface = self.small_font.render(context_text, True, self.BLACK)
-        context_rect = context_surface.get_rect(center=(self.WIDTH//2, y_pos))
-        self.screen.blit(context_surface, context_rect)
+        elif self.mini_game_type == 'code_sequence':
+            # Draw code sequence
+            if self.current_sequence_index < len(self.code_sequences):
+                current_seq = self.code_sequences[self.current_sequence_index]
+                
+                if self.showing_sequence:
+                    # Show the sequence to memorize
+                    sequence_text = "Memorize: " + " ".join(['↑' if x == 'UP' else '↓' if x == 'DOWN' else '←' if x == 'LEFT' else '→' for x in current_seq['sequence']])
+                    sequence_surface = self.font.render(sequence_text, True, self.BLACK)
+                    sequence_rect = sequence_surface.get_rect(center=(self.WIDTH//2, 350))
+                    self.screen.blit(sequence_surface, sequence_rect)
+                else:
+                    # Show input prompt
+                    input_text = "Enter sequence: " + " ".join(['↑' if x == 'UP' else '↓' if x == 'DOWN' else '←' if x == 'LEFT' else '→' for x in current_seq['current_input']])
+                    input_surface = self.font.render(input_text, True, self.BLUE)
+                    input_rect = input_surface.get_rect(center=(self.WIDTH//2, 350))
+                    self.screen.blit(input_surface, input_rect)
     
     def draw_ui(self):
         """Draw the game UI"""
